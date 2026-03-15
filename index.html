@@ -269,23 +269,46 @@ function renderQuestions(){
 }
 
 function goMeter(){
-  score=0;
-  for(let i=0;i<5;i++){
-    const a=document.querySelector(`input[name="q${i}"]:checked`);
-    if(!a){alert("सभी प्रश्नों के उत्तर दें");return;}
-    score+=parseInt(a.value);
-  }
-  page1.classList.remove("active");
-  page2.classList.add("active");
 
-  const p=Math.round((score/15)*100);
-  meterFill.style.width=p+"%";
-  meterFill.className="meter-fill";
+score=0;
 
-  if(p>70){zone="red";meterFill.classList.add("red");meterText.innerText="High Mental Pollution";}
-  else if(p>40){zone="yellow";meterFill.classList.add("yellow");meterText.innerText="Moderate Mental Pollution";}
-  else{zone="green";meterFill.classList.add("green");meterText.innerText="Low Mental Pollution";}
+for(let i=0;i<5;i++){
+const a=document.querySelector(`input[name="q${i}"]:checked`);
+if(!a){alert("सभी प्रश्नों के उत्तर दें");return;}
+score+=parseInt(a.value);
 }
+
+page1.classList.remove("active");
+page2.classList.add("active");
+
+const p=Math.round((score/15)*100);
+
+const needle=document.getElementById("needle");
+
+let angle=0;
+
+if(p>70){
+zone="red";
+angle=-70;
+meterText.innerText="High Mental Pollution";
+}
+else if(p>40){
+zone="yellow";
+angle=0;
+meterText.innerText="Moderate Mental Pollution";
+}
+else{
+zone="green";
+angle=70;
+meterText.innerText="Low Mental Pollution";
+}
+
+setTimeout(()=>{
+needle.style.transform="translateX(-50%) rotate("+angle+"deg)";
+},300);
+
+}
+
 
 function goSpin(){page2.classList.remove("active");page3.classList.add("active");}
 
