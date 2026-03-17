@@ -13,16 +13,32 @@ body{
 margin:0;
 overflow:hidden;
 font-family:system-ui;
-background:linear-gradient(180deg,#020617,#1e3a8a,#0ea5e9);
+background:#020617;
 }
 
-/* game area */
+/* game */
 
 #game{
-
 width:100vw;
 height:100vh;
 position:relative;
+}
+
+/* stars */
+
+.star{
+position:absolute;
+width:2px;
+height:2px;
+background:white;
+opacity:.8;
+animation:starMove linear infinite;
+}
+
+@keyframes starMove{
+
+0%{transform:translateY(0)}
+100%{transform:translateY(100vh)}
 
 }
 
@@ -39,12 +55,27 @@ filter:drop-shadow(0 0 15px #38bdf8);
 
 }
 
-/* falling items */
+/* items */
 
 .item{
 
 position:absolute;
 font-size:32px;
+
+}
+
+/* coin animation */
+
+.coin{
+
+animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+0%{transform:rotate(0deg)}
+100%{transform:rotate(360deg)}
 
 }
 
@@ -57,15 +88,15 @@ top:20px;
 left:50%;
 transform:translateX(-50%);
 background:rgba(0,0,0,.4);
-padding:10px 18px;
-border-radius:10px;
+padding:10px 20px;
+border-radius:12px;
 color:white;
 display:flex;
-gap:20px;
+gap:25px;
 
 }
 
-/* start button */
+/* start */
 
 #start{
 
@@ -73,12 +104,38 @@ position:absolute;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
-padding:14px 28px;
+padding:14px 30px;
 border:none;
-border-radius:10px;
+border-radius:12px;
 font-size:18px;
 background:gold;
+cursor:pointer;
 
+}
+
+/* popup */
+
+#popup{
+
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:20px 30px;
+border-radius:12px;
+display:none;
+text-align:center;
+
+}
+
+button{
+padding:10px 18px;
+border:none;
+border-radius:8px;
+background:#0ea5e9;
+color:white;
+cursor:pointer;
 }
 
 </style>
@@ -92,12 +149,23 @@ background:gold;
 
 <div>शांति: <span id="score">0</span></div>
 <div>ज्ञान ✨: <span id="coins">0</span></div>
+<div>High: <span id="high">0</span></div>
 
 </div>
 
 <div id="player">🧘</div>
 
 <button id="start">Start Meditation</button>
+
+<div id="popup">
+
+<h2>Mind Disturbed 😵</h2>
+
+<p>Your Score: <span id="final"></span></p>
+
+<button onclick="restart()">Restart</button>
+
+</div>
 
 </div>
 
@@ -110,41 +178,62 @@ let score=0
 let coins=0
 let running=false
 
+/* high score */
+
+let high=localStorage.getItem("meditationHigh") || 0
+document.getElementById("high").innerText=high
+
+/* stars */
+
+for(let i=0;i<80;i++){
+
+let star=document.createElement("div")
+
+star.className="star"
+
+star.style.left=Math.random()*window.innerWidth+"px"
+
+star.style.top=Math.random()*window.innerHeight+"px"
+
+star.style.animationDuration=(3+Math.random()*5)+"s"
+
+game.appendChild(star)
+
+}
+
 /* move player */
 
 document.addEventListener("mousemove",e=>{
-
 player.style.left=e.clientX+"px"
-
 })
 
 document.addEventListener("touchmove",e=>{
-
 player.style.left=e.touches[0].clientX+"px"
-
 })
 
-/* create falling items */
+/* create items */
 
 function createItem(){
 
 let types=["😡","😨","😤","✨"]
 
+let type=types[Math.floor(Math.random()*types.length)]
+
 let item=document.createElement("div")
 
 item.className="item"
 
-let type=types[Math.floor(Math.random()*types.length)]
+if(type=="✨") item.classList.add("coin")
 
 item.innerHTML=type
 
 item.style.left=Math.random()*window.innerWidth+"px"
 
-item.style.top="-50px"
+item.style.top="-40px"
 
 game.appendChild(item)
 
-let pos=-50
+let pos=-40
 
 let fall=setInterval(()=>{
 
@@ -160,44 +249,122 @@ pos+=5
 
 item.style.top=pos+"px"
 
-let playerX=player.offsetLeft
+let playerRect=player.getBoundingClientRect()
 
-let itemX=item.offsetLeft
+let itemRect=item.getBoundingClientRect()
 
-let playerY=window.innerHeight-120
+let hit=!(
 
-if(Math.abs(playerX-itemX)<50 && pos>playerY){
+playerRect.right < itemRect.left ||
+playerRect.left > itemRect.right ||
+playerRect.bottom < itemRect.top ||
+playerRect.top > itemRect.bottom
+
+)
+
+if(hit){
 
 if(type=="✨"){
 
 coins++
+
 document.getElementById("coins").innerText=coins
+
+particle(itemRect.left,itemRect.top)
 
 }else{
 
-alert("Mind Disturbed 😵")
-
-location.reload()
+gameOver()
 
 }
 
 item.remove()
+
 clearInterval(fall)
 
 }
 
 if(pos>window.innerHeight){
 
-item.remove()
-clearInterval(fall)
-
 score++
 
 document.getElementById("score").innerText=score
 
+item.remove()
+
+clearInterval(fall)
+
 }
 
 },30)
+
+}
+
+/* particles */
+
+function particle(x,y){
+
+for(let i=0;i<6;i++){
+
+let p=document.createElement("div")
+
+p.innerHTML="✨"
+
+p.style.position="absolute"
+
+p.style.left=x+"px"
+
+p.style.top=y+"px"
+
+p.style.fontSize="16px"
+
+game.appendChild(p)
+
+let dx=(Math.random()*60)-30
+
+let dy=(Math.random()*60)-30
+
+setTimeout(()=>{
+
+p.style.transform=`translate(${dx}px,${dy}px)`
+
+p.style.opacity=0
+
+},50)
+
+setTimeout(()=>{
+
+p.remove()
+
+},600)
+
+}
+
+}
+
+/* game over */
+
+function gameOver(){
+
+running=false
+
+document.getElementById("popup").style.display="block"
+
+document.getElementById("final").innerText=score
+
+if(score>high){
+
+localStorage.setItem("meditationHigh",score)
+
+}
+
+}
+
+/* restart */
+
+function restart(){
+
+location.reload()
 
 }
 
@@ -213,7 +380,7 @@ createItem()
 
 }
 
-},1200)
+},1000)
 
 }
 
