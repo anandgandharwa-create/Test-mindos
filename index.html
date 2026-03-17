@@ -1,58 +1,72 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+
 <meta charset="UTF-8">
-<title>Mind vs Witness</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Krishna Runner</title>
 
 <style>
 
 body{
+margin:0;
+overflow:hidden;
 font-family:Arial;
-background:#020617;
-color:white;
-text-align:center;
-padding:40px;
+background:#0f172a;
 }
 
-.game{
-max-width:500px;
-margin:auto;
-background:#1e293b;
-padding:30px;
-border-radius:15px;
+#game{
+width:100vw;
+height:100vh;
+position:relative;
+background:linear-gradient(#38bdf8,#0ea5e9);
 }
 
-.card{
+#player{
+position:absolute;
+bottom:80px;
+left:60px;
+font-size:40px;
+}
+
+.obstacle{
+position:absolute;
+bottom:80px;
+font-size:30px;
+}
+
+.coin{
+position:absolute;
+bottom:140px;
+font-size:28px;
+}
+
+#ground{
+position:absolute;
+bottom:0;
+width:100%;
+height:80px;
 background:#334155;
-padding:40px;
-border-radius:12px;
-font-size:20px;
-margin-bottom:20px;
 }
 
-button{
-width:45%;
-padding:12px;
-margin:5px;
+#ui{
+position:absolute;
+top:15px;
+left:15px;
+color:white;
+font-size:18px;
+}
+
+#start{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+padding:12px 20px;
+font-size:18px;
 border:none;
 border-radius:8px;
-font-size:16px;
-cursor:pointer;
-}
-
-.mind{
-background:#ef4444;
-color:white;
-}
-
-.witness{
-background:#22c55e;
-color:white;
-}
-
-#result{
-margin-top:15px;
-font-size:18px;
 }
 
 </style>
@@ -61,82 +75,230 @@ font-size:18px;
 
 <body>
 
-<div class="game">
+<div id="game">
 
-<h2>🧠 Mind vs Witness</h2>
+<div id="ui">
 
-<div class="card" id="thought"></div>
+Score: <span id="score">0</span>
+<br>
+ज्ञान: <span id="coins">0</span>
+<br>
+Level: <span id="level">1</span>
 
-<button class="mind" onclick="answer('mind')">मन</button>
-<button class="witness" onclick="answer('witness')">साक्षी</button>
+</div>
 
-<p id="result"></p>
-<p id="score"></p>
+<div id="player">🧿</div>
+
+<div id="ground"></div>
+
+<button id="start">Start Krishna Journey</button>
 
 </div>
 
 <script>
 
-let thoughts=[
+let player=document.getElementById("player")
+let game=document.getElementById("game")
 
-{t:"मुझे डर लग रहा है",type:"mind"},
-{t:"विचार आ रहे हैं",type:"mind"},
-{t:"मैं विचारों को देख रहा हूँ",type:"witness"},
-{t:"भावना उठी और चली गई",type:"witness"},
-{t:"मुझे गुस्सा आया",type:"mind"}
-
-]
-
-let index=0
 let score=0
+let coins=0
+let level=1
 
-function load(){
+let jumping=false
+let running=false
 
-document.getElementById("thought").innerText=thoughts[index].t
+function jump(){
 
-document.getElementById("result").innerHTML=""
+if(jumping) return
+
+jumping=true
+
+let height=80
+
+let up=setInterval(()=>{
+
+if(height>=180){
+
+clearInterval(up)
+
+let down=setInterval(()=>{
+
+if(height<=80){
+clearInterval(down)
+jumping=false
+}
+
+height-=6
+player.style.bottom=height+"px"
+
+},20)
 
 }
 
-function answer(choice){
+height+=6
+player.style.bottom=height+"px"
 
-if(choice==thoughts[index].type){
-
-score+=10
-document.getElementById("result").innerHTML="✔ सही"
-
-}
-else{
-
-document.getElementById("result").innerHTML="❌ गलत"
+},20)
 
 }
 
-index++
+document.addEventListener("touchstart",jump)
+document.addEventListener("keydown",jump)
 
-setTimeout(()=>{
+function createObstacle(){
 
-if(index<thoughts.length){
+let types=["😡","😠","😨"] // अहंकार क्रोध भय
 
-load()
+let obs=document.createElement("div")
+
+obs.className="obstacle"
+
+obs.innerHTML=types[Math.floor(Math.random()*types.length)]
+
+obs.style.left=window.innerWidth+"px"
+
+game.appendChild(obs)
+
+let pos=window.innerWidth
+
+let move=setInterval(()=>{
+
+if(!running){
+
+clearInterval(move)
+obs.remove()
+return
 
 }
 
-else{
+pos-=6+(level*1)
 
-document.getElementById("thought").innerHTML="🎉 Game Complete"
+obs.style.left=pos+"px"
 
-document.getElementById("score").innerHTML="आपका स्कोर: "+score
+let playerBottom=parseInt(window.getComputedStyle(player).bottom)
+
+if(pos<90 && pos>40 && playerBottom<120){
+
+alert("Game Over\nScore: "+score)
+location.reload()
 
 }
 
-},700)
+if(pos<-40){
+
+score++
+
+document.getElementById("score").innerText=score
+
+obs.remove()
+
+clearInterval(move)
 
 }
 
-load()
+},20)
+
+}
+
+function createCoin(){
+
+let coin=document.createElement("div")
+
+coin.className="coin"
+
+coin.innerHTML="✨"
+
+coin.style.left=window.innerWidth+"px"
+
+game.appendChild(coin)
+
+let pos=window.innerWidth
+
+let move=setInterval(()=>{
+
+if(!running){
+
+clearInterval(move)
+coin.remove()
+return
+
+}
+
+pos-=6+(level*1)
+
+coin.style.left=pos+"px"
+
+let playerBottom=parseInt(window.getComputedStyle(player).bottom)
+
+if(pos<90 && pos>40 && playerBottom>120){
+
+coins++
+
+document.getElementById("coins").innerText=coins
+
+coin.remove()
+
+clearInterval(move)
+
+if(coins%5==0){
+
+level++
+
+document.getElementById("level").innerText=level
+
+alert("🧘 Meditation State Level "+level+" Unlocked")
+
+}
+
+}
+
+if(pos<-40){
+
+coin.remove()
+clearInterval(move)
+
+}
+
+},20)
+
+}
+
+function gameLoop(){
+
+setInterval(()=>{
+
+if(running){
+
+createObstacle()
+
+}
+
+},2000)
+
+setInterval(()=>{
+
+if(running){
+
+createCoin()
+
+}
+
+},3000)
+
+}
+
+document.getElementById("start").onclick=function(){
+
+running=true
+
+this.style.display="none"
+
+gameLoop()
+
+}
 
 </script>
 
 </body>
+
 </html>
