@@ -2,271 +2,165 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wisdom Runner</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<title>Krishna Code Puzzle</title>
 
 <style>
-*{box-sizing:border-box}
+
 body{
-margin:0;
-font-family:'Poppins',sans-serif;
-background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
+font-family:Arial;
+background:#0f172a;
 color:white;
-display:flex;
-align-items:center;
-justify-content:center;
-height:100vh;
-overflow:hidden;
-}
-
-#gameContainer{
-position:relative;
-width:900px;
-max-width:95vw;
-}
-
-canvas{
-width:100%;
-background:linear-gradient(#0f172a,#020617);
-border-radius:18px;
-box-shadow:0 20px 60px rgba(0,0,0,0.7);
-}
-
-#hud{
-position:absolute;
-top:10px;
-left:20px;
-font-size:18px;
-letter-spacing:1px;
-background:rgba(0,0,0,0.35);
-padding:6px 14px;
-border-radius:8px;
-}
-
-#wisdomBox{
-position:absolute;
-left:50%;
-top:45%;
-transform:translate(-50%,-50%);
-background:rgba(255,255,255,0.95);
-color:#111;
-padding:28px;
-width:320px;
-max-width:90%;
-border-radius:16px;
 text-align:center;
-display:none;
-animation:fadeIn .5s;
-box-shadow:0 10px 40px rgba(0,0,0,0.4);
+padding:40px;
 }
 
-#wisdomText{
-font-size:18px;
-line-height:1.5;
-margin-bottom:16px;
+.gamebox{
+max-width:500px;
+margin:auto;
+background:#1e293b;
+padding:30px;
+border-radius:15px;
 }
 
 button{
-padding:10px 22px;
+display:block;
+width:100%;
+margin:10px 0;
+padding:12px;
 font-size:16px;
 border:none;
 border-radius:8px;
-background:linear-gradient(135deg,#2563eb,#3b82f6);
+background:#6366f1;
 color:white;
 cursor:pointer;
-transition:.2s;
 }
 
 button:hover{
-transform:scale(1.05);
+background:#4f46e5;
 }
 
-#startScreen{
-position:absolute;
-left:50%;
-top:50%;
-transform:translate(-50%,-50%);
-text-align:center;
-}
-
-#title{
-font-size:40px;
-font-weight:700;
-margin-bottom:10px;
-background:linear-gradient(90deg,#38bdf8,#818cf8);
--webkit-background-clip:text;
-color:transparent;
-}
-
-#subtitle{
-opacity:.7;
-margin-bottom:20px;
-}
-
-#startBtn{
+#result{
+margin-top:15px;
 font-size:18px;
-padding:12px 28px;
-}
-
-#mobileHint{
-margin-top:10px;
-font-size:13px;
-opacity:.6;
-}
-
-@keyframes fadeIn{
-from{opacity:0;transform:translate(-50%,-60%)}
-to{opacity:1;transform:translate(-50%,-50%)}
 }
 
 </style>
+
 </head>
+
 <body>
 
-<div id="gameContainer">
+<div class="gamebox">
 
-<div id="hud">Score: <span id="score">0</span></div>
+<h2>🧠 Krishna Code Puzzle</h2>
 
-<canvas id="game" width="900" height="320"></canvas>
+<p id="question"></p>
 
-<div id="startScreen">
-<div id="title">Wisdom Runner</div>
-<div id="subtitle">Play • Pause • Wisdom • Awareness</div>
-<button id="startBtn" onclick="startGame()">Start Game</button>
-<div id="mobileHint">SPACE / TAP to Jump</div>
-</div>
+<div id="options"></div>
 
-<div id="wisdomBox">
-<div id="wisdomText"></div>
-<button onclick="continueGame()">Continue Journey</button>
-</div>
+<p id="result"></p>
+
+<p id="score"></p>
 
 </div>
 
 <script>
-const canvas=document.getElementById('game');
-const ctx=canvas.getContext('2d');
 
-let player={x:80,y:250,w:32,h:32,vy:0,jump:false};
-let gravity=0.8;
-let obstacles=[];
-let score=0;
-let running=false;
+let questions=[
 
-const wisdom=[
-"आप विचार नहीं हैं — विचारों के साक्षी हैं।",
-"शांति बाहर नहीं, आपकी चेतना में है।",
-"धीमी सांस — शांत मन।",
-"रुकें, देखें, जागें।",
-"जो देख रहा है वही असली आप हैं।",
-"मन बदलता है, साक्षी स्थिर है।"
-];
+{
+q:"मैं शरीर नहीं, मैं ___ हूँ",
+options:["मन","साक्षी चेतना","अहंकार"],
+answer:1
+},
 
-function drawPlayer(){
-ctx.fillStyle="#22c55e";
-ctx.beginPath();
-ctx.roundRect(player.x,player.y,player.w,player.h,6);
-ctx.fill();
+{
+q:"वेदांत कहता है मन है",
+options:["विचारों की धारा","आत्मा","भगवान"],
+answer:0
+},
+
+{
+q:"शांति आती है जब",
+options:["मन रुकता है","विचार बढ़ते हैं","इच्छा बढ़ती है"],
+answer:0
+},
+
+{
+q:"कृष्ण का संदेश है",
+options:["कर्म करो","भागो","डरो"],
+answer:0
 }
 
-function drawObstacles(){
-ctx.fillStyle="#ef4444";
-obstacles.forEach(o=>{
-ctx.beginPath();
-ctx.roundRect(o.x,o.y,o.w,o.h,4);
-ctx.fill();
-});
+]
+
+let index=0
+let score=0
+
+function loadQuestion(){
+
+let q=questions[index]
+
+document.getElementById("question").innerText=q.q
+
+let optHTML=""
+
+q.options.forEach((opt,i)=>{
+
+optHTML+=`<button onclick="check(${i})">${opt}</button>`
+
+})
+
+document.getElementById("options").innerHTML=optHTML
+
+document.getElementById("result").innerHTML=""
+
 }
 
-function update(){
-if(!running) return;
+function check(i){
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
+if(i==questions[index].answer){
 
-player.vy+=gravity;
-player.y+=player.vy;
+score+=10
 
-if(player.y>250){
-player.y=250;
-player.vy=0;
-player.jump=false;
+document.getElementById("result").innerHTML="✔ सही उत्तर"
+
 }
 
-if(Math.random()<0.02){
-obstacles.push({x:900,y:250,w:22,h:30});
+else{
+
+document.getElementById("result").innerHTML="❌ गलत उत्तर"
+
 }
 
-obstacles.forEach(o=>{
- o.x-=5;
+index++
 
- if(player.x<o.x+o.w && player.x+player.w>o.x && player.y<o.y+o.h && player.y+player.h>o.y){
- gameOver();
- }
-});
-
-obstacles=obstacles.filter(o=>o.x>-30);
-
-score++;
-
-document.getElementById('score').innerText=score;
-
-if(score%600===0){
-showWisdom();
-}
-
-ctx.fillStyle="#1e293b";
-ctx.fillRect(0,282,900,40);
-
- drawPlayer();
- drawObstacles();
-
-requestAnimationFrame(update);
-}
-
-function startGame(){
-document.getElementById('startScreen').style.display='none';
-running=true;
-update();
-}
-
-function showWisdom(){
-running=false;
-let text=wisdom[Math.floor(Math.random()*wisdom.length)];
-document.getElementById('wisdomText').innerText=text;
-document.getElementById('wisdomBox').style.display='block';
-}
-
-function continueGame(){
-document.getElementById('wisdomBox').style.display='none';
-running=true;
-update();
-}
-
-function jump(){
-if(!player.jump){
-player.vy=-13;
-player.jump=true;
-}
-}
-
-function gameOver(){
-running=false;
 setTimeout(()=>{
-alert("Journey Complete! Score: "+score);
-location.reload();
-},100);
+
+if(index<questions.length){
+
+loadQuestion()
+
 }
 
-window.addEventListener('keydown',e=>{
-if(e.code==='Space') jump();
-});
+else{
 
-canvas.addEventListener('touchstart',jump);
-canvas.addEventListener('mousedown',jump);
+document.getElementById("question").innerHTML="🎉 Game Complete"
+
+document.getElementById("options").innerHTML=""
+
+document.getElementById("score").innerHTML="आपका स्कोर: "+score
+
+}
+
+},800)
+
+}
+
+loadQuestion()
 
 </script>
 
 </body>
+
 </html>
