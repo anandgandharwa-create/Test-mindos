@@ -2,19 +2,19 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Krishna Code Puzzle</title>
+<title>Mind vs Witness</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#0f172a;
+background:#020617;
 color:white;
 text-align:center;
 padding:40px;
 }
 
-.gamebox{
+.game{
 max-width:500px;
 margin:auto;
 background:#1e293b;
@@ -22,21 +22,32 @@ padding:30px;
 border-radius:15px;
 }
 
+.card{
+background:#334155;
+padding:40px;
+border-radius:12px;
+font-size:20px;
+margin-bottom:20px;
+}
+
 button{
-display:block;
-width:100%;
-margin:10px 0;
+width:45%;
 padding:12px;
-font-size:16px;
+margin:5px;
 border:none;
 border-radius:8px;
-background:#6366f1;
-color:white;
+font-size:16px;
 cursor:pointer;
 }
 
-button:hover{
-background:#4f46e5;
+.mind{
+background:#ef4444;
+color:white;
+}
+
+.witness{
+background:#22c55e;
+color:white;
 }
 
 #result{
@@ -50,86 +61,54 @@ font-size:18px;
 
 <body>
 
-<div class="gamebox">
+<div class="game">
 
-<h2>🧠 Krishna Code Puzzle</h2>
+<h2>🧠 Mind vs Witness</h2>
 
-<p id="question"></p>
+<div class="card" id="thought"></div>
 
-<div id="options"></div>
+<button class="mind" onclick="answer('mind')">मन</button>
+<button class="witness" onclick="answer('witness')">साक्षी</button>
 
 <p id="result"></p>
-
 <p id="score"></p>
 
 </div>
 
 <script>
 
-let questions=[
+let thoughts=[
 
-{
-q:"मैं शरीर नहीं, मैं ___ हूँ",
-options:["मन","साक्षी चेतना","अहंकार"],
-answer:1
-},
-
-{
-q:"वेदांत कहता है मन है",
-options:["विचारों की धारा","आत्मा","भगवान"],
-answer:0
-},
-
-{
-q:"शांति आती है जब",
-options:["मन रुकता है","विचार बढ़ते हैं","इच्छा बढ़ती है"],
-answer:0
-},
-
-{
-q:"कृष्ण का संदेश है",
-options:["कर्म करो","भागो","डरो"],
-answer:0
-}
+{t:"मुझे डर लग रहा है",type:"mind"},
+{t:"विचार आ रहे हैं",type:"mind"},
+{t:"मैं विचारों को देख रहा हूँ",type:"witness"},
+{t:"भावना उठी और चली गई",type:"witness"},
+{t:"मुझे गुस्सा आया",type:"mind"}
 
 ]
 
 let index=0
 let score=0
 
-function loadQuestion(){
+function load(){
 
-let q=questions[index]
-
-document.getElementById("question").innerText=q.q
-
-let optHTML=""
-
-q.options.forEach((opt,i)=>{
-
-optHTML+=`<button onclick="check(${i})">${opt}</button>`
-
-})
-
-document.getElementById("options").innerHTML=optHTML
+document.getElementById("thought").innerText=thoughts[index].t
 
 document.getElementById("result").innerHTML=""
 
 }
 
-function check(i){
+function answer(choice){
 
-if(i==questions[index].answer){
+if(choice==thoughts[index].type){
 
 score+=10
-
-document.getElementById("result").innerHTML="✔ सही उत्तर"
+document.getElementById("result").innerHTML="✔ सही"
 
 }
-
 else{
 
-document.getElementById("result").innerHTML="❌ गलत उत्तर"
+document.getElementById("result").innerHTML="❌ गलत"
 
 }
 
@@ -137,30 +116,27 @@ index++
 
 setTimeout(()=>{
 
-if(index<questions.length){
+if(index<thoughts.length){
 
-loadQuestion()
+load()
 
 }
 
 else{
 
-document.getElementById("question").innerHTML="🎉 Game Complete"
-
-document.getElementById("options").innerHTML=""
+document.getElementById("thought").innerHTML="🎉 Game Complete"
 
 document.getElementById("score").innerHTML="आपका स्कोर: "+score
 
 }
 
-},800)
+},700)
 
 }
 
-loadQuestion()
+load()
 
 </script>
 
 </body>
-
 </html>
