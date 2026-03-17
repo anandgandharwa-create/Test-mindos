@@ -3,9 +3,9 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>Krishna Runner</title>
+<title>Meditation Balance</title>
 
 <style>
 
@@ -13,105 +13,72 @@ body{
 margin:0;
 overflow:hidden;
 font-family:system-ui;
-background:#020617;
+background:linear-gradient(180deg,#020617,#1e3a8a,#0ea5e9);
 }
 
+/* game area */
+
 #game{
+
 width:100vw;
 height:100vh;
 position:relative;
-background:linear-gradient(180deg,#0ea5e9,#1e3a8a,#020617);
+
 }
 
-/* Player */
+/* player */
 
 #player{
+
 position:absolute;
-bottom:90px;
-left:70px;
-font-size:44px;
-filter:drop-shadow(0 0 10px #facc15);
-transition:transform .2s;
-}
-
-/* Obstacles */
-
-.obstacle{
-position:absolute;
-bottom:90px;
-font-size:34px;
-}
-
-/* Coin */
-
-.coin{
-position:absolute;
-bottom:160px;
-font-size:30px;
-animation:spin 1.2s linear infinite;
-}
-
-@keyframes spin{
-0%{transform:rotate(0deg)}
-100%{transform:rotate(360deg)}
-}
-
-/* Ground */
-
-#ground{
-position:absolute;
-bottom:0;
-width:100%;
-height:90px;
-background:linear-gradient(90deg,#1e293b,#334155);
-box-shadow:0 -4px 15px rgba(0,0,0,.5);
-}
-
-/* UI Panel */
-
-#ui{
-position:absolute;
-top:15px;
+bottom:120px;
 left:50%;
 transform:translateX(-50%);
-background:rgba(0,0,0,.35);
-backdrop-filter:blur(10px);
-padding:10px 18px;
-border-radius:12px;
-color:white;
-font-size:16px;
-display:flex;
-gap:20px;
+font-size:50px;
+filter:drop-shadow(0 0 15px #38bdf8);
+
 }
 
-/* Start Button */
+/* falling items */
+
+.item{
+
+position:absolute;
+font-size:32px;
+
+}
+
+/* UI */
+
+#ui{
+
+position:absolute;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+background:rgba(0,0,0,.4);
+padding:10px 18px;
+border-radius:10px;
+color:white;
+display:flex;
+gap:20px;
+
+}
+
+/* start button */
 
 #start{
+
 position:absolute;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
 padding:14px 28px;
-font-size:18px;
 border:none;
-border-radius:12px;
-background:linear-gradient(90deg,#facc15,#f59e0b);
-color:#000;
-font-weight:bold;
-box-shadow:0 6px 20px rgba(0,0,0,.4);
-}
+border-radius:10px;
+font-size:18px;
+background:gold;
 
-/* Level Popup */
-
-#levelup{
-position:absolute;
-top:40%;
-left:50%;
-transform:translateX(-50%);
-font-size:26px;
-color:#facc15;
-display:none;
-text-shadow:0 0 15px #facc15;
 }
 
 </style>
@@ -123,19 +90,14 @@ text-shadow:0 0 15px #facc15;
 
 <div id="ui">
 
-<div>Score: <span id="score">0</span></div>
+<div>शांति: <span id="score">0</span></div>
 <div>ज्ञान ✨: <span id="coins">0</span></div>
-<div>Level 🧘: <span id="level">1</span></div>
 
 </div>
 
-<div id="player">🧿</div>
+<div id="player">🧘</div>
 
-<div id="levelup">Meditation Level Unlocked</div>
-
-<div id="ground"></div>
-
-<button id="start">Start Krishna Journey</button>
+<button id="start">Start Meditation</button>
 
 </div>
 
@@ -146,184 +108,124 @@ let game=document.getElementById("game")
 
 let score=0
 let coins=0
-let level=1
-
-let jumping=false
 let running=false
 
-function jump(){
+/* move player */
 
-if(jumping) return
+document.addEventListener("mousemove",e=>{
 
-jumping=true
-let height=90
+player.style.left=e.clientX+"px"
 
-let up=setInterval(()=>{
+})
 
-if(height>=200){
+document.addEventListener("touchmove",e=>{
 
-clearInterval(up)
+player.style.left=e.touches[0].clientX+"px"
 
-let down=setInterval(()=>{
+})
 
-if(height<=90){
-clearInterval(down)
-jumping=false
-}
+/* create falling items */
 
-height-=6
-player.style.bottom=height+"px"
+function createItem(){
 
-},20)
+let types=["😡","😨","😤","✨"]
 
-}
+let item=document.createElement("div")
 
-height+=6
-player.style.bottom=height+"px"
+item.className="item"
 
-},20)
+let type=types[Math.floor(Math.random()*types.length)]
 
-}
+item.innerHTML=type
 
-document.addEventListener("touchstart",jump)
-document.addEventListener("keydown",jump)
+item.style.left=Math.random()*window.innerWidth+"px"
 
-/* Obstacles */
+item.style.top="-50px"
 
-function createObstacle(){
+game.appendChild(item)
 
-let types=["😡","😠","😨"]
+let pos=-50
 
-let obs=document.createElement("div")
-obs.className="obstacle"
-obs.innerHTML=types[Math.floor(Math.random()*3)]
-
-obs.style.left=window.innerWidth+"px"
-
-game.appendChild(obs)
-
-let pos=window.innerWidth
-
-let move=setInterval(()=>{
+let fall=setInterval(()=>{
 
 if(!running){
-clearInterval(move)
-obs.remove()
+
+clearInterval(fall)
+item.remove()
 return
+
 }
 
-pos-=7+(level*1)
+pos+=5
 
-obs.style.left=pos+"px"
+item.style.top=pos+"px"
 
-let playerBottom=parseInt(window.getComputedStyle(player).bottom)
+let playerX=player.offsetLeft
 
-if(pos<100 && pos>50 && playerBottom<130){
+let itemX=item.offsetLeft
 
-alert("Game Over\nScore: "+score)
+let playerY=window.innerHeight-120
+
+if(Math.abs(playerX-itemX)<50 && pos>playerY){
+
+if(type=="✨"){
+
+coins++
+document.getElementById("coins").innerText=coins
+
+}else{
+
+alert("Mind Disturbed 😵")
+
 location.reload()
 
 }
 
-if(pos<-40){
+item.remove()
+clearInterval(fall)
+
+}
+
+if(pos>window.innerHeight){
+
+item.remove()
+clearInterval(fall)
 
 score++
+
 document.getElementById("score").innerText=score
 
-obs.remove()
-clearInterval(move)
+}
+
+},30)
 
 }
 
-},20)
+/* loop */
 
-}
-
-/* Coins */
-
-function createCoin(){
-
-let coin=document.createElement("div")
-coin.className="coin"
-coin.innerHTML="✨"
-
-coin.style.left=window.innerWidth+"px"
-
-game.appendChild(coin)
-
-let pos=window.innerWidth
-
-let move=setInterval(()=>{
-
-if(!running){
-clearInterval(move)
-coin.remove()
-return
-}
-
-pos-=7+(level*1)
-
-coin.style.left=pos+"px"
-
-let playerBottom=parseInt(window.getComputedStyle(player).bottom)
-
-if(pos<100 && pos>50 && playerBottom>140){
-
-coins++
-
-document.getElementById("coins").innerText=coins
-
-coin.remove()
-clearInterval(move)
-
-if(coins%5==0){
-
-level++
-document.getElementById("level").innerText=level
-
-let popup=document.getElementById("levelup")
-
-popup.style.display="block"
-
-setTimeout(()=>{
-popup.style.display="none"
-},1500)
-
-}
-
-}
-
-if(pos<-40){
-coin.remove()
-clearInterval(move)
-}
-
-},20)
-
-}
-
-/* Game Loop */
-
-function gameLoop(){
+function loop(){
 
 setInterval(()=>{
-if(running) createObstacle()
-},1800)
 
-setInterval(()=>{
-if(running) createCoin()
-},2600)
+if(running){
+
+createItem()
 
 }
 
-/* Start */
+},1200)
+
+}
+
+/* start */
 
 document.getElementById("start").onclick=function(){
 
 running=true
+
 this.style.display="none"
 
-gameLoop()
+loop()
 
 }
 
