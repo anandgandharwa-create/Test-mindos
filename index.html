@@ -14,6 +14,7 @@ margin:0;
 overflow:hidden;
 font-family:system-ui;
 background:#020617;
+touch-action:none;   /* mobile scroll बंद */
 }
 
 /* game */
@@ -208,9 +209,9 @@ player.style.left=e.clientX+"px"
 })
 
 document.addEventListener("touchmove",e=>{
+e.preventDefault();   // scroll रोकता है
 player.style.left=e.touches[0].clientX+"px"
-})
-
+},{passive:false})
 /* create items */
 
 function createItem(){
